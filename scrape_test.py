@@ -1,12 +1,14 @@
 import re
 
 import requests
+import urllib3
+urllib3.disable_warnings()
 from bs4 import BeautifulSoup
 
 URL = "https://www.ilan.gov.tr/ilan/kategori/44/kamu-personel-alim-ve-sinavlari?currentPage=0"
 HEADERS = {"User-Agent": "Mozilla/5.0 (compatible; ilan-bot/0.1)"}
 
-r = requests.get(URL, headers=HEADERS, timeout=30)
+r = requests.get(URL, headers=HEADERS, timeout=30, verify=False)
 print("Durum kodu:", r.status_code, "| Sayfa boyutu:", len(r.text))
 
 soup = BeautifulSoup(r.text, "html.parser")
