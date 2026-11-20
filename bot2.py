@@ -5,18 +5,7 @@ import sys
 import bot
 import detay
 import gorsel2
-
-
-def aciklama_yaz(ilan):
-    s = ["📢 " + ilan["baslik"][:300], ""]
-    if ilan["kurum"]:
-        s += ["🏛 " + ilan["kurum"], ""]
-    if ilan.get("bitis_yazi"):
-        s += ["⏰ Son başvuru: " + ilan["bitis_yazi"], ""]
-    s += ["Başvuru şartları ve ayrıntılar için resmî ilanı inceleyin:", ilan["url"], "",
-          "Kaynak: ilan.gov.tr", "",
-          "#kamuilan #kpss #kamupersonelalımı #memur #işilanı"]
-    return "\n".join(s)
+import metin
 
 
 def uret():
@@ -50,7 +39,7 @@ def uret():
 
 
 if __name__ == "__main__":
-    bot.aciklama_yaz = aciklama_yaz
+    bot.aciklama_yaz = metin.aciklama_yaz
     komut = sys.argv[1] if len(sys.argv) > 1 else ""
     if komut == "uret":
         uret()
@@ -58,4 +47,3 @@ if __name__ == "__main__":
         bot.paylas()
     else:
         print("Kullanim: python bot2.py uret | paylas")
-      
