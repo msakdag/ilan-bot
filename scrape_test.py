@@ -1,37 +1,46 @@
+import re
+
 import requests
 import urllib3
-from bs4 import BeautifulSoup
+from playwright.sync_api import sync_playwright
 
 urllib3.disable_warnings()
-HEADERS = {
-    "User-Agent": "Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Mobile Safari/537.36",
-    "Accept": "text/html,application/xml;q=0.9,*/*;q=0.8",
-    "Accept-Language": "tr-TR,tr;q=0.9",
-}
 
-PAGES = [
-    "https://www.iskur.gov.tr/ilanlar/kamu-memur-alim-ilanlari",
-    "https://www.iskur.gov.tr/ilanlar/kurumdisi-kamu-isci-alim-ilanlari/",
+print("--- iskur robots.txt ---")
+try:
+    rb = requests.get("https://www.iskur.gov.tr/robots.txt", timeout=30, verify=False)
+    print(rb.status_code)
+    print(rb.text[:400])
+except Exception as e:
+    print("HATA", str(e)[:80])
+
+SAYFALAR = [
+    ("ILAN", "https://www.ilan.gov.tr/ilan/kategori/44/kamu-personel-alim-ve-sinavlari"),
+    ("ISKUR-MEMUR", "https://www.iskur.gov.tr/ilanlar/kamu-memur-alim-ilanlari"),
+    ("ISKUR-ISCI", "https://www.iskur.gov.tr/ilanlar/kurumdisi-kamu-isci-alim-ilanlari/"),
 ]
 
-for url in PAGES:
-    r = requests.get(url, headers=HEADERS, timeout=30, verify=False)
-    soup = BeautifulSoup(r.text, "html.parser")
-    print("=====", url, "|", r.status_code)
-    print("tablo:", len(soup.find_all("table")),
-          "| tr:", len(soup.find_all("tr")),
-          "| li:", len(soup.find_all("li")))
-
-    bulunan = []
-    for a in soup.find_all("a", href=True):
-        href = a["href"]
-        metin = a.get_text(" ", strip=True)
-        pdf = ".pdf" in href.lower()
-        ilan_gibi = "ilan" in href.lower() and len(metin) > 25
-        if pdf or ilan_gibi:
-            bulunan.append((metin[:90], href[:120]))
-
-    print("ilan benzeri baglanti:", len(bulunan))
-    for metin, href in bulunan[:12]:
-        print(" -", metin, "|", href)
-        
+with sync_playwright() as p:
+    browser = p.chromium.launch()
+    context = browser.new_context(ignore_https_errors=True, locale="tr-TR")
+    for ad, url in SAYFALAR:
+        print("=====", ad)
+        page = context.new_page()
+        try:
+            page.goto(url, wait_until="networkidle", timeout=60000)
+        except Exception as e:
+            print("Yukleme uyarisi:", str(e)[:80])
+        links = page.eval_on_selector_all(
+            "a[href]",
+            "els => els.map(e => [e.innerText.trim().slice(0, 90), e.getAttribute('href')])",
+        )
+        ilan = [l for l in links if re.search(r"/ilan/\d+/", l[1]) or ".pdf" in l[1].lower()]
+        print("toplam baglanti:", len(links), "| ilan benzeri:", len(ilan))
+        for metin, href in ilan[:8]:
+            print(" -", metin.replace("\n", " "), "|", href[:100])
+        if not ilan:
+            govde = page.inner_text("body")
+            print("Sayfa metni (ilk 300):", govde[:300].replace("\n", " "))
+        page.close()
+    browser.close()
+    
