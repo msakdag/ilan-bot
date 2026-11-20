@@ -1,6 +1,8 @@
 name: Ilan Bot
 
 on:
+    - cron: "0 9 * * *"
+    - cron: "0 17 * * *"
   workflow_dispatch:
     inputs:
       paylas:
@@ -35,7 +37,7 @@ jobs:
           git add gorseller
           git diff --cached --quiet || (git commit -m "Yeni gorseller" && git push)
       - name: Instagram'a paylas
-        if: ${{ github.event.inputs.paylas == 'true' }}
+        if: ${{ github.event_name == 'schedule' || github.event.inputs.paylas == 'true' }}
         run: python bot2.py paylas
         env:
           IG_USER_ID: ${{ secrets.IG_USER_ID }}
