@@ -20,4 +20,3 @@ def aciklama_yaz(ilan):
         "#kamuilan #kpss #kamupersonelalımı #memur #işilanı",
     ]
     return "\n".join(s)
-  
