@@ -1,4 +1,4 @@
-bu name: Kesif
+name: Kesif
 
 on:
   workflow_dispatch:
