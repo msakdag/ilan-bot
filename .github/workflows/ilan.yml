@@ -2,50 +2,59 @@ name: Ilan Bot
 
 on:
   schedule:
-    - cron: "17 9 * * *"
-    - cron: "23 17 * * *"
+    - cron: "17 9-12 * * *"
+    - cron: "23 17-19 * * *"
+  workflow_dispatch:
     inputs:
       paylas:
-        description: "Instagram'a gercekten paylas (true / false)"
+        description: "Gercekten paylas (true / false)"
         default: "false"
       adet:
-        description: "En fazla kac ilan"
+        description: "Kac ilan"
         default: "1"
 
 permissions:
   contents: write
 
 jobs:
+  karar:
+    runs-on: ubuntu-latest
+    outputs:
+      calis: ${{ steps.k.outputs.calis }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: k
+        run: python3 zaman.py karar
+        env:
+          OLAY: ${{ github.event_name }}
+
   bot:
+    needs: karar
+    if: needs.karar.outputs.calis == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - run: pip install requests playwright pillow
-      - run: playwright install --with-deps chromium
-      - run: sudo apt-get install -y fonts-dejavu-core
-      - name: Ilanlari cek ve gorsel uret
-        run: python bot2.py uret
+      - run: |
+          pip install requests playwright pillow
+          playwright install --with-deps chromium
+          sudo apt-get install -y fonts-dejavu-core
+      - run: python bot2.py uret
         env:
           ADET: ${{ github.event.inputs.adet }}
-      - name: Gorselleri kaydet
-        run: |
+      - run: |
           git config user.name "ilan-bot"
           git config user.email "ilan-bot@users.noreply.github.com"
           git add gorseller
-          git diff --cached --quiet || (git commit -m "Yeni gorseller" && git push)
-      - name: Instagram'a paylas
-        if: ${{ github.event_name == 'schedule' || github.event.inputs.paylas == 'true' }}
+          git diff --cached --quiet || (git commit -m "Gorsel" && git push)
+      - if: ${{ github.event_name == 'schedule' || github.event.inputs.paylas == 'true' }}
         run: python bot2.py paylas
         env:
           IG_USER_ID: ${{ secrets.IG_USER_ID }}
           IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
-      - name: Durumu kaydet
-        run: |
-          git config user.name "ilan-bot"
-          git config user.email "ilan-bot@users.noreply.github.com"
+      - run: |
           mkdir -p durum
           git add durum
-          git diff --cached --quiet || (git commit -m "Durum guncellendi" && git push)
+          git diff --cached --quiet || (git commit -m "Durum" && git push)
