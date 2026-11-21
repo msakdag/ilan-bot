@@ -6,6 +6,7 @@ import bot
 import detay
 import gorsel2
 import metin
+import zaman
 
 
 def uret():
@@ -44,6 +45,9 @@ if __name__ == "__main__":
     if komut == "uret":
         uret()
     elif komut == "paylas":
+        once = len(bot.durum_oku())
         bot.paylas()
+        if len(bot.durum_oku()) > once:
+            zaman.kaydet()
     else:
         print("Kullanim: python bot2.py uret | paylas")
