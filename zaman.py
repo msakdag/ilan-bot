@@ -61,3 +61,6 @@ def kaydet():
 if __name__ == "__main__":
     komut = sys.argv[1] if len(sys.argv) > 1 else ""
     if komut == "karar":
+        karar()
+    elif komut == "kaydet":
+        kaydet()
