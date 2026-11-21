@@ -2,9 +2,8 @@ name: Ilan Bot
 
 on:
   schedule:
-    - cron: "0 9 * * *"
-    - cron: "0 17 * * *"
-  workflow_dispatch:
+    - cron: "17 9 * * *"
+    - cron: "23 17 * * *"
     inputs:
       paylas:
         description: "Instagram'a gercekten paylas (true / false)"
