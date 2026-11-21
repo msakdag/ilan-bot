@@ -13,8 +13,9 @@ def uret():
     adet = int(os.environ.get("ADET") or 1)
     gorulmus = set(bot.durum_oku())
     yeniler = [i for i in bot.ilanlari_cek() if i["id"] not in gorulmus]
-    print("Daha once paylasilmamis:", len(yeniler))
-    aday = yeniler[: adet + 5]
+    uygun = [i for i in yeniler if metin.uygun(i)]
+    print("Daha once paylasilmamis:", len(yeniler), "| uygun:", len(uygun))
+    aday = uygun[: adet + 5]
     metinler = detay.detay_getir([i["url"] for i in aday])
     bugun = detay.bugun()
     secilen = []
@@ -51,3 +52,4 @@ if __name__ == "__main__":
             zaman.kaydet()
     else:
         print("Kullanim: python bot2.py uret | paylas")
+# SON
