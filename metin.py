@@ -1,3 +1,15 @@
+HARIC = ("hizmeti alınacak", "danışmanlık", "ihale", "satılacak", "kiralanacak")
+
+
+def kucult(s):
+    return s.replace("İ", "i").replace("I", "ı").lower()
+
+
+def uygun(ilan):
+    b = kucult(ilan["baslik"])
+    return not any(k in b for k in HARIC)
+
+
 def aciklama_yaz(ilan):
     s = ["📢 " + ilan["baslik"][:300]]
     ek = []
@@ -20,3 +32,4 @@ def aciklama_yaz(ilan):
         "#kamuilan #kpss #kamupersonelalımı #memur #işilanı",
     ]
     return "\n".join(s)
+# SON
